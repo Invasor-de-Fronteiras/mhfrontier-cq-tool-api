@@ -1,0 +1,9 @@
+version: "3.9"
+
+services:
+    
+  mhfrontier-cq-api:
+    build: .
+    container_name: mhfrontier-cq-api
+    ports:
+      - "8080:8080"
