@@ -1,27 +1,20 @@
 FROM rust:slim-buster as builder
 
-WORKDIR /usr/src
+WORKDIR /app
 
-RUN USER=root cargo new mhfrontier-cq-tool-api
+ARG APP_NAME=mhfrontier-cq-tool-api
 
-WORKDIR /usr/src/mhfrontier-cq-tool-api
-
-COPY Cargo.toml Cargo.lock /usr/src/mhfrontier-cq-tool-api/
+COPY . .
 
 RUN cargo build --release
+RUN cp ./target/release/$APP_NAME /bin/server
 
-COPY src /usr/src/mhfrontier-cq-tool-api/src/
+FROM debian:buster-slim as runtime
 
-RUN touch /usr/src/mhfrontier-cq-tool-api/src/main.rs
-
-RUN cargo build --release
-
-FROM debian:buster-slim
-
+COPY --from=builder /bin/server /bin/
 EXPOSE 8080
 
-COPY --from=builder /usr/src/mhfrontier-cq-tool-api/target/release/mhfrontier-cq-tool-api /usr/local/bin/mhfrontier-cq-tool-api
+WORKDIR /usr
 
-WORKDIR /usr/local/bin/
+CMD ["/bin/server"]
 
-CMD ["./mhfrontier-cq-tool-api"]
