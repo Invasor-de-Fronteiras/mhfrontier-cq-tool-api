@@ -1,23 +1,22 @@
-use actix_web::{App, HttpServer};
-use actix_web::middleware::Logger;
+mod app;
+mod middlewares;
+mod routes;
+mod editor;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-pub mod editor;
-pub mod api;
+#[tokio::main]
+async fn main() {
+    dotenvy::dotenv().ok();
 
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    println!("Starting api...");
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::EnvFilter::new(
+            "info,tower_http=debug"
+        ))
+        .with(tracing_subscriber::fmt::layer())
+        .init();
 
-    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:5001").await.unwrap();
+    axum::serve(listener, app::create_api()).await.unwrap();
 
-    let api = HttpServer::new(|| {
-        App::new()
-            .wrap(Logger::new("%a \"%r\" %{User-Agent}i"))
-            .service(api::get_all_routers())
-    })
-    .bind(("0.0.0.0", 8080))?
-    .run()
-    .await;
-
-    return api;
+    println!("MH Frontier CQ Tool started!");
 }

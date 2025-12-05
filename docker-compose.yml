@@ -1,9 +1,12 @@
 version: "3.9"
 
 services:
-    
-  mhfrontier-cq-api:
-    build: .
-    container_name: mhfrontier-cq-api
+  mhfrontier-cq-tool-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mhfrontier-cq-tool-api
     ports:
-      - "8080:8080"
+      - "5001:5001"
+    env_file:
+      - .env

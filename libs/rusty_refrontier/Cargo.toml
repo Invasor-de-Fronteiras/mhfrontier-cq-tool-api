@@ -1,0 +1,11 @@
+[package]
+name = "rusty_refrontier"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+better_cursor = { path= "../better_cursor" }
+serde = "1.0.117"
+serde_derive = "1.0.117"
+serde_json = "1.0.59"
+crc32fast = "1.4.0"

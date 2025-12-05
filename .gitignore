@@ -1,1 +1,3 @@
 /target
+src/editor/tests/temp/**
+.env

@@ -1,20 +1,26 @@
-FROM rust:slim-buster as builder
+FROM rust:1.91 as chef
+WORKDIR /app
+RUN cargo install cargo-chef
+
+FROM chef as planner
+COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
+
+FROM chef as builder
+COPY libs libs
+COPY --from=planner /app/recipe.json recipe.json
+RUN cargo chef cook --release --recipe-path recipe.json
+
+COPY . .
+RUN cargo build --release
+
+FROM gcr.io/distroless/cc-debian12 as runtime
 
 WORKDIR /app
 
-ARG APP_NAME=mhfrontier-cq-tool-api
+COPY --from=builder /app/target/release/* .
 
-COPY . .
+USER nonroot:nonroot
 
-RUN cargo build --release
-RUN cp ./target/release/$APP_NAME /bin/server
-
-FROM debian:buster-slim as runtime
-
-COPY --from=builder /bin/server /bin/
-EXPOSE 8080
-
-WORKDIR /usr
-
-CMD ["/bin/server"]
-
+EXPOSE 5001
+CMD ["./mhfrontier-cq-tool-api"]
